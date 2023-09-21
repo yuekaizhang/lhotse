@@ -44,6 +44,7 @@ from .kaldifeat import (
     KaldifeatMfccConfig,
 )
 from .librosa_fbank import LibrosaFbank, LibrosaFbankConfig
+from .whisper_fbank import WhisperFbank, WhisperFbankConfig
 from .mfcc import TorchaudioMfcc, TorchaudioMfccConfig
 from .mixer import FeatureMixer
 from .opensmile import OpenSmileConfig, OpenSmileExtractor
