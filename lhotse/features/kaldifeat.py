@@ -291,7 +291,7 @@ class KaldifeatWhisperFbank(KaldifeatExtractor):
         import kaldifeat
 
         opts = kaldifeat.WhisperFbankOptions(
-            self.config.num_filters, device=self.config.device
+            num_mels=self.config.num_filters, device=self.config.device
         )
         self.extractor = kaldifeat.WhisperFbank(opts)
 
