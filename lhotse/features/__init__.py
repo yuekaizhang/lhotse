@@ -42,6 +42,8 @@ from .kaldifeat import (
     KaldifeatFbankConfig,
     KaldifeatMfcc,
     KaldifeatMfccConfig,
+    KaldifeatWhisperFbank,
+    KaldifeatWhisperFbankConfig,
 )
 from .librosa_fbank import LibrosaFbank, LibrosaFbankConfig
 from .mfcc import TorchaudioMfcc, TorchaudioMfccConfig

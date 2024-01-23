@@ -7,7 +7,7 @@ import numpy as np
 import torch
 
 from lhotse.features.base import FeatureExtractor, register_extractor
-from lhotse.utils import EPSILON, Seconds, is_module_available
+from lhotse.utils import EPSILON, Seconds, asdict_nonull, is_module_available
 
 
 @dataclass
@@ -259,3 +259,56 @@ class KaldifeatMfcc(KaldifeatExtractor):
 
     def feature_dim(self, sampling_rate: int) -> int:
         return self.config.num_ceps
+
+
+@dataclass
+class KaldifeatWhisperFbankConfig:
+    num_filters: int = 80
+    device: Union[str, torch.device] = "cpu"
+
+    # This is an extra setting compared to kaldifeat FbankOptions:
+    # by default, we'll ask kaldifeat to compute the feats in chunks
+    # to avoid excessive memory usage.
+    chunk_size: Optional[int] = 100 * 60 * 20  # 20 minutes (assuming 100 frame/s)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict_nonull(self)
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> "KaldifeatWhisperFbankConfig":
+        return KaldifeatWhisperFbankConfig(**data)
+
+
+@register_extractor
+class KaldifeatWhisperFbank(KaldifeatExtractor):
+    """Log Mel energy filter bank feature extractor based on ``kaldifeat`` package."""
+
+    name = "kaldifeat-whisper-fbank"
+    config_type = KaldifeatWhisperFbankConfig
+
+    def __init__(self, config: Optional[KaldifeatWhisperFbankConfig] = None) -> None:
+        super().__init__(config)
+        import kaldifeat
+
+        self.extractor = kaldifeat.WhisperFbank(
+            kaldifeat.WhisperFbankOptions.from_dict(self.config.to_dict())
+        )
+
+    def feature_dim(self, sampling_rate: int) -> int:
+        return self.config.mel_opts.num_bins
+
+    @staticmethod
+    def mix(
+        features_a: np.ndarray, features_b: np.ndarray, energy_scaling_factor_b: float
+    ) -> np.ndarray:
+        return np.log(
+            np.maximum(
+                # protection against log(0); max with EPSILON is adequate since these are energies (always >= 0)
+                EPSILON,
+                np.exp(features_a) + energy_scaling_factor_b * np.exp(features_b),
+            )
+        )
+
+    @staticmethod
+    def compute_energy(features: np.ndarray) -> float:
+        return float(np.sum(np.exp(features)))
