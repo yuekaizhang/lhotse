@@ -3,6 +3,7 @@ import logging
 import pickle
 import random
 import secrets
+import time
 import warnings
 from collections import defaultdict
 from concurrent.futures import Executor, ProcessPoolExecutor, as_completed
@@ -2086,7 +2087,10 @@ class CutSet(Serializable, AlgorithmMixin):
         ) as executor:
             # Display progress bar correctly.
             progress.update(len(cuts_writer.ignore_ids))
+            time_end = 0
             for batch in dloader:
+                time_start = time.time()
+                print(f"Batch loaded in {time_start - time_end:.2f} seconds.")
                 cuts = batch["cuts"]
                 waves = batch["audio"]
                 wave_lens = batch["audio_lens"] if collate else None
@@ -2113,6 +2117,8 @@ class CutSet(Serializable, AlgorithmMixin):
 
                 futures.append(executor.submit(_save_worker, cuts, features))
                 progress.update(len(cuts))
+                time_end = time.time()
+                print(f"Batch processed in {time_end - time_start:.2f} seconds.")
 
         # If ``manifest_path`` was provided, this is a lazy manifest;
         # otherwise everything is in memory.
