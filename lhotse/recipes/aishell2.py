@@ -107,10 +107,7 @@ def prepare_aishell2(
 
     manifests = defaultdict(dict)
     dataset_parts = ["train", "dev", "test"]
-    for part in tqdm(
-        dataset_parts,
-        desc="Process aishell2 audio",
-    ):
+    for part in dataset_parts:
         logging.info(f"Processing aishell2 subset: {part}")
         # Generate a mapping: utt_id -> (audio_path, audio_info, speaker, text)
 
@@ -131,7 +128,7 @@ def prepare_aishell2(
                 transcript_dict[idx_transcript[0]] = content
 
         supervisions, recordings = [], []
-        for audio_path in wav_path.rglob("**/*.wav"):
+        for audio_path in tqdm(wav_path.rglob("**/*.wav")):
             if not audio_path.is_file():
                 logging.warning(f"No such file: {audio_path}")
                 continue
