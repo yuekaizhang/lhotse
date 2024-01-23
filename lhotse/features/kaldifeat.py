@@ -290,12 +290,13 @@ class KaldifeatWhisperFbank(KaldifeatExtractor):
         super().__init__(config)
         import kaldifeat
 
-        self.extractor = kaldifeat.WhisperFbank(
-            kaldifeat.WhisperFbankOptions.from_dict(self.config.to_dict())
+        opts = kaldifeat.WhisperFbankOptions(
+            self.config.num_filters, device=self.config.device
         )
+        self.extractor = kaldifeat.WhisperFbank(opts)
 
     def feature_dim(self, sampling_rate: int) -> int:
-        return self.config.mel_opts.num_bins
+        return self.config.num_filters
 
     @staticmethod
     def mix(
