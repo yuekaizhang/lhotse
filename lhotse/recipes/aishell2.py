@@ -109,7 +109,7 @@ def prepare_aishell2(
     dataset_parts = ["train", "dev", "test"]
     for part in tqdm(
         dataset_parts,
-        desc="Process aishell2 audio, it takes about 55  minutes using 40 cpu jobs.",
+        desc="Process aishell2 audio",
     ):
         logging.info(f"Processing aishell2 subset: {part}")
         # Generate a mapping: utt_id -> (audio_path, audio_info, speaker, text)
@@ -130,13 +130,13 @@ def prepare_aishell2(
                 content = text_normalize(content)
                 transcript_dict[idx_transcript[0]] = content
 
-        supervisions = []
-        recordings = RecordingSet.from_dir(
-            path=wav_path, pattern="*.wav", num_jobs=num_jobs
-        )
-
+        supervisions, recordings = [], []
         for audio_path in wav_path.rglob("**/*.wav"):
-
+            if not audio_path.is_file():
+                logging.warning(f"No such file: {audio_path}")
+                continue
+            recording = Recording.from_file(audio_path)
+            recordings.append(recording)
             idx = audio_path.stem
             speaker = audio_path.parts[-2]
             if idx not in transcript_dict:
@@ -152,7 +152,7 @@ def prepare_aishell2(
                 id=idx,
                 recording_id=idx,
                 start=0.0,
-                duration=recordings.duration(idx),
+                duration=recording.duration,
                 channel=0,
                 language="Chinese",
                 speaker=speaker,
