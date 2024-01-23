@@ -290,6 +290,8 @@ class KaldifeatWhisperFbank(KaldifeatExtractor):
         super().__init__(config)
         import kaldifeat
 
+        self.sampling_rate = 16000
+        self.hop_length = 160
         opts = kaldifeat.WhisperFbankOptions(
             num_mels=self.config.num_filters, device=self.config.device
         )
@@ -297,6 +299,10 @@ class KaldifeatWhisperFbank(KaldifeatExtractor):
 
     def feature_dim(self, sampling_rate: int) -> int:
         return self.config.num_filters
+
+    @property
+    def frame_shift(self) -> Seconds:
+        return self.hop_length / self.sampling_rate
 
     @staticmethod
     def mix(
