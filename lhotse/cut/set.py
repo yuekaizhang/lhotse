@@ -2015,7 +2015,11 @@ class CutSet(Serializable, AlgorithmMixin):
         sampler.filter(lambda cut: cut.id not in cuts_writer.ignore_ids)
         dataset = UnsupervisedWaveformDataset(collate=collate)
         dloader = DataLoader(
-            dataset, batch_size=None, sampler=sampler, num_workers=num_workers
+            dataset,
+            batch_size=None,
+            sampler=sampler,
+            num_workers=num_workers,
+            prefetch_factor=8,
         )
 
         # Background worker to save features to disk.
@@ -2116,8 +2120,8 @@ class CutSet(Serializable, AlgorithmMixin):
                     )
                 time_save_start = time.time()
                 print(f"Batch processed in {time_save_start - time_start:.2f} seconds.")
-                # futures.append(executor.submit(_save_worker, cuts, features))
-                _save_worker(cuts, features)
+                futures.append(executor.submit(_save_worker, cuts, features))
+                # _save_worker(cuts, features)
                 time_save_end = time.time()
                 print(f"Batch saved in {time_save_end - time_save_start:.2f} seconds.")
                 progress.update(len(cuts))
