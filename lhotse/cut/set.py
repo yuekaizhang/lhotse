@@ -2114,11 +2114,14 @@ class CutSet(Serializable, AlgorithmMixin):
                     features = extractor.extract_batch(
                         waves, sampling_rate=cuts[0].sampling_rate, lengths=wave_lens
                     )
-
-                futures.append(executor.submit(_save_worker, cuts, features))
+                time_save_start = time.time()
+                print(f"Batch processed in {time_save_start - time_start:.2f} seconds.")
+                # futures.append(executor.submit(_save_worker, cuts, features))
+                _save_worker(cuts, features)
+                time_save_end = time.time()
+                print(f"Batch saved in {time_save_end - time_save_start:.2f} seconds.")
                 progress.update(len(cuts))
                 time_end = time.time()
-                print(f"Batch processed in {time_end - time_start:.2f} seconds.")
 
         # If ``manifest_path`` was provided, this is a lazy manifest;
         # otherwise everything is in memory.
